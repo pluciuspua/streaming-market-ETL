@@ -1,11 +1,11 @@
-import asyncio, websockets, json
-from google.cloud import pubsub_v1
+# python
+# file: publisher_crypto.py
+import asyncio
+import websockets
+import json
+from publisher import PubSubPublisher
 
-# Pub/Sub configuration
-project_id = "live-data-pipeline-471309"  # Update with your project ID
-topic_id = "live_data_crypto"             # Your topic name
-publisher = pubsub_v1.PublisherClient()
-topic_path = publisher.topic_path(project_id, topic_id)
+pub = PubSubPublisher()  # reads env/config or pass topic_id/project_id explicitly
 
 async def stream_binance():
     uri = "wss://stream.binance.com:9443/ws/btcusdt@kline_1s"
@@ -13,33 +13,18 @@ async def stream_binance():
         while True:
             msg = await websocket.recv()
             event = json.loads(msg)
-            
-            # Publish to Pub/Sub
-            try:
-                # Convert dict back to JSON string for publishing
-                data = json.dumps(event).encode("utf-8")
-                future = publisher.publish(topic_path, data)
-                message_id = future.result()  # Wait for message to be published
-                print(f"Published message ID: {message_id}")
-            except Exception as e:
-                print(f"Error publishing to Pub/Sub: {e}")
 
+            # publish non-blocking and add callback to log result
+            future = pub.publish_json(event, blocking=False)
+            def _cb(f):
+                try:
+                    print("Published message ID:", f.result())
+                except Exception as e:
+                    print("Publish error:", e)
+            future.add_done_callback(_cb)
 
 if __name__ == "__main__":
-    asyncio.run(stream_binance())
-
-# https://developers.binance.com/docs/binance-spot-api-docs/web-socket-streams#general-wss-information
-#'e': 'trade', 'E': 1757173373056, 's': 'BTCUSDT', 't': 5218555707, 'p': '110600.00000000', 'q': '0.00042000', 'T': 1757173373056, 'm': True, 'M': True}
-# {
-#   "e": "aggTrade",    // Event type
-#   "E": 1672515782136, // Event time
-#   "s": "BNBBTC",      // Symbol
-#   "a": 12345,         // Aggregate trade ID
-#   "p": "0.001",       // Price
-#   "q": "100",         // Quantity
-#   "f": 100,           // First trade ID
-#   "l": 105,           // Last trade ID
-#   "T": 1672515782136, // Trade time
-#   "m": true,          // Is the buyer the market maker?
-#   "M": true           // Ignore
-# }
+    try:
+        asyncio.run(stream_binance())
+    finally:
+        pub.close()
