@@ -3,6 +3,13 @@ import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions, StandardOptions
 from datetime import datetime
 import os
+import yaml
+
+with open("config.yaml", "r") as f:
+    cfg = yaml.safe_load(f)
+    if cfg:
+        gcp_project = cfg["gcp_project"]
+        gcp_region = cfg["gcp_region"]
 
 
 # ------------------------------

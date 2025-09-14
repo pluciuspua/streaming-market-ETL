@@ -25,7 +25,22 @@ def fetch_news_data(symbol):
         "time_to": now.strftime('%Y%m%dT%H%M')
     }
     r = requests.get(url, params=params).json()
-    return r['feed']
+    return [
+        {
+            "symbol": symbol,
+            "headline": article["title"],
+            "url": article["url"],
+            "title": article["title"],
+            "summary": article.get("summary", ""),
+            "source": article.get("source", ""),
+            "time_published": article.get("time_published", ""),
+            "sentiment": article.get("overall_sentiment_label", ""),
+            "sentiment_score": article.get("overall_sentiment_score", 0),
+            "fetched_at": formatted_time
+        }
+        for article in r.get("feed", [])
+    ]
+
 try:
     while True:
         msg = fetch_news_data(SYMBOL)

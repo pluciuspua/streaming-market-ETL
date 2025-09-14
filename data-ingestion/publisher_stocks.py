@@ -24,7 +24,6 @@ def fetch_stock_price(symbol):
 try:
     while True:
         msg = fetch_stock_price(SYMBOL)
-        # blocking publish so we print the message id
         message_id = pub.publish_json(msg, blocking=True)
         print("Published:", msg, "id:", message_id)
         time.sleep(60)
