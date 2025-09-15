@@ -10,6 +10,7 @@ with open("config.yaml", "r") as f:
     if cfg:
         gcp_project = cfg["gcp_project"]
         gcp_region = cfg["gcp_region"]
+print(gcp_project, gcp_region)
 
 
 # ------------------------------

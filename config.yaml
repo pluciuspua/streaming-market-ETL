@@ -1,6 +1,10 @@
 ---
-project_id : "live-data-pipeline-471309"
+gcp_project_id : "live-data-pipeline-471309"
 topic_crypto: "live_data_crypto"
 topic_stock: "live_data_market"
 topic_news: "live_data_news"
-region: "southeast"
+gcp_region: "asia-southeast1"
+subscribers:
+  crypto: "live_data_crypto-sub"
+  stocks: "live_data_market-sub"
+  news: "live_data_news-sub"

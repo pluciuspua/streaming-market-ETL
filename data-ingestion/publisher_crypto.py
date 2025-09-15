@@ -5,7 +5,9 @@ import websockets
 import json
 from publisher import PubSubPublisher
 
-pub = PubSubPublisher()  # reads env/config or pass topic_id/project_id explicitly
+pub = PubSubPublisher(config_path="C:\\Users\\Lucius\\OneDrive - National University of Singapore\\Desktop\\School\\Tech Projects\\streaming-market-ETL\\config.yaml",
+                      topic_id="topic_crypto"
+                      )
 
 async def stream_binance():
     uri = "wss://stream.binance.com:9443/ws/btcusdt@kline_1s"
@@ -13,18 +15,12 @@ async def stream_binance():
         while True:
             msg = await websocket.recv()
             event = json.loads(msg)
-
-            # publish non-blocking and add callback to log result
-            future = pub.publish_json(event, blocking=False)
-            def _cb(f):
-                try:
-                    print("Published message ID:", f.result())
-                except Exception as e:
-                    print("Publish error:", e)
-            future.add_done_callback(_cb)
+            try:
+                future = pub.publish_json(event)
+                message_id = future.result()
+                print(f"Published message ID: {message_id}")
+            except Exception as e:
+                print(f"Error publishing to Pub/Sub: {e}")
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(stream_binance())
-    finally:
-        pub.close()
+    asyncio.run(stream_binance())

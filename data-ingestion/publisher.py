@@ -18,8 +18,8 @@ class PubSubPublisher:
 
         try:
             with open(config_path, "r") as f:
-                cfg = yaml.safe_load(f) or {}
-                project_id = cfg.get("project_id")
+                cfg = yaml.safe_load(f)
+                project_id = cfg.get("gcp_project_id")
                 topic_id = cfg.get(topic_id)
         except Exception:
                 print("Warning: config.yaml not found or invalid, falling back to env vars only")
@@ -30,36 +30,27 @@ class PubSubPublisher:
         self._project_id = project_id
         self._topic_id = topic_id
         self._publisher = pubsub_v1.PublisherClient()
-        self._topic_path = self._publisher.topic_path(self._project_id, self._topic_id)
+        self._topic_path =  'projects/{project_id}/topics/{topic}'.format(
+            project_id=project_id,
+            topic=topic_id
+        )
 
-    def publish(self, data: Union[bytes, str], blocking: bool = True, attributes: Optional[Dict[str, str]] = None, topic_id: Optional[str] = None) -> Union[str, pubsub_v1.types.PublisherFuture]:
+    def publish_json(self, json_data):
         """
-        Publish raw bytes or a string.
-        - data: bytes or str (strings are UTF-8 encoded)
-        - blocking: if True wait for publish and return message_id, otherwise return Future
-        - attributes: optional dict of string attributes
-        - topic_id: optional override topic_id for this publish
+        Publish a JSON-serializable object to Pub/Sub.
+        Args:
+          json_data: JSON-serializable object (dict, list, etc)
+        Returns:
+          Future object for the publish operation.
         """
-        if isinstance(data, str):
-            data = data.encode("utf-8")
-        attrs = attributes or {}
-
-        topic_path = self._topic_path
-        if topic_id:
-            topic_path = self._publisher.topic_path(self._project_id, topic_id)
-
-        future = self._publisher.publish(topic_path, data, **attrs)
-        return future.result() if blocking else future
-
-    def publish_json(self, obj: Any, blocking: bool = True, attributes: Optional[Dict[str, str]] = None, topic_id: Optional[str] = None) -> Union[str, pubsub_v1.types.PublisherFuture]:
-        payload = json.dumps(obj, default=str)
-        return self.publish(payload, blocking=blocking, attributes=attributes, topic_id=topic_id)
-
-    def publish_bytes(self, data: bytes, blocking: bool = True, attributes: Optional[Dict[str, str]] = None, topic_id: Optional[str] = None) -> Union[str, pubsub_v1.types.PublisherFuture]:
-        return self.publish(data, blocking=blocking, attributes=attributes, topic_id=topic_id)
-
+        if not isinstance(json_data, (dict, list)):
+            raise ValueError("json_data must be a dict or list")
+        data= json.dumps(json_data).encode("utf-8")
+        future = self._publisher.publish(self._topic_path, data=data)
+        return future
     def close(self):
-        try:
-            self._publisher.close()
-        except Exception:
-            pass
+        """
+        Close the Pub/Sub publisher client.
+        :return:
+        """
+        self._publisher.transport.close()

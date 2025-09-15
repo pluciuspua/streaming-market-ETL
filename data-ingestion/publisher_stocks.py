@@ -1,14 +1,22 @@
 import time
 import requests
 import os
+import yaml
+
 from publisher import PubSubPublisher
 from dotenv import load_dotenv
+with open("config.yaml", 'r') as f:
+    cfg = yaml.safe_load(f)
+    if cfg:
+        gcp_project = cfg["gcp_project"]
+        gcp_region = cfg["gcp_region"]
+        topic_id = cfg.get("topic_stock", "")
 
 load_dotenv()
 API_KEY = os.getenv("ALPHAVANTAGE_API_KEY")
 SYMBOL = "AAPL"
 
-pub = PubSubPublisher()  # will use config or env; override with topic_id if needed
+pub = PubSubPublisher(topic_id)  # will use config or env; override with topic_id if needed
 
 def fetch_stock_price(symbol):
     url = "https://www.alphavantage.co/query"

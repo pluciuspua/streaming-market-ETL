@@ -7,7 +7,9 @@ load_dotenv()
 API_KEY = os.getenv("ALPHAVANTAGE_API_KEY")
 SYMBOL = "AAPL"
 
-pub = PubSubPublisher()
+pub = PubSubPublisher(config_path="C:\\Users\\Lucius\\OneDrive - National University of Singapore\\Desktop\\School\\Tech Projects\\streaming-market-ETL\\config.yaml",
+                      topic_id="topic_news"
+                      )
 
 def fetch_news_data(symbol):
     now = datetime.now()
@@ -40,12 +42,15 @@ def fetch_news_data(symbol):
         }
         for article in r.get("feed", [])
     ]
+def stream_news_data():
+    try:
+        while True:
+            msg = fetch_news_data(SYMBOL)
+            message_id = pub.publish_json(msg).result()
+            print("Published:", msg, "id:", message_id)
+            time.sleep(3600) # fetch every hour
+    finally:
+        pub.close()
 
-try:
-    while True:
-        msg = fetch_news_data(SYMBOL)
-        message_id = pub.publish_json(msg, blocking=True)
-        print("Published:", msg, "id:", message_id)
-        time.sleep(3600) # fetch every hour
-finally:
-    pub.close()
+if __name__ == "__main__":
+    stream_news_data()
