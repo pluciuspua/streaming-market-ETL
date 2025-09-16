@@ -8,3 +8,7 @@ subscribers:
   crypto: "live_data_crypto-sub"
   stocks: "live_data_market-sub"
   news: "live_data_news-sub"
+temp_location: "gs://live-data-pipeline-bkt/crypto_data_temp"
+bq_table_crypto: "live-data-pipeline-471309.crypto_market_data.crypto_aggregates"
+bq_table_stock: "live-data-pipeline-471309.crypto_market_data.stock_aggregates"
+bq_table_news: "live-data-pipeline-471309.crypto_market_data.news_aggregates"
