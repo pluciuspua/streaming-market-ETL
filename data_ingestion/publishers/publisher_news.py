@@ -1,4 +1,3 @@
-from publisher import PubSubPublisher
 from dotenv import load_dotenv
 import json, time, requests, os
 from datetime import datetime, timedelta
@@ -6,10 +5,7 @@ from datetime import datetime, timedelta
 load_dotenv()
 API_KEY = os.getenv("ALPHAVANTAGE_API_KEY")
 SYMBOL = "AAPL"
-
-pub = PubSubPublisher(config_path="C:\\Users\\Lucius\\OneDrive - National University of Singapore\\Desktop\\School\\Tech Projects\\streaming-market-ETL\\config.yaml",
-                      topic_id="topic_news"
-                      )
+tickers = ["AAPL", "MSFT", "GOOG", "AMZN", "TSLA"]
 
 def fetch_news_data(symbol):
     now = datetime.now()
@@ -42,15 +38,16 @@ def fetch_news_data(symbol):
         }
         for article in r.get("feed", [])
     ]
-def stream_news_data():
+def stream_news_data(publisher):
     try:
         while True:
-            msg = fetch_news_data(SYMBOL)
-            message_id = pub.publish_json(msg).result()
-            print("Published:", msg, "id:", message_id)
-            time.sleep(3600) # fetch every hour
+            for symbol in tickers:
+                msg = fetch_news_data(symbol)
+                message_id = publisher.publish_json(msg).result()
+                print("Published:", msg, "id:", message_id)
+            time.sleep(3600 * 24) # fetch every 24 hours
     finally:
-        pub.close()
+        publisher.close()
 
 if __name__ == "__main__":
     stream_news_data()

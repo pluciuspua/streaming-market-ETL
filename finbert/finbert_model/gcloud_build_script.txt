@@ -1,0 +1,9 @@
+
+# Create a Docker repository in Google Cloud Artifact Registry
+gcloud artifacts repositories create finbert-repo --repository-format=docker --location=asia-southeast1
+
+# Build and push the Docker image to the Artifact Registry
+gcloud builds submit --tag asia-southeast1-docker.pkg.dev/live-data-pipeline-471309/finbert-repo/finbert-api:latest .
+
+# Deploy the Docker image to Cloud Run
+gcloud run deploy finbert-api --image asia-southeast1-docker.pkg.dev/$PROJECT_ID/finbert-repo/finbert-api:latest --region asia-southeast1 --platform managed --allow-unauthenticated --memory=2Gi --cpu=2

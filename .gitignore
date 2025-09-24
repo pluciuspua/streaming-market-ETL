@@ -1,2 +1,6 @@
 *.env
 *.pyc
+*.safetensors
+__pycache__/
+.ipynb_checkpoints/
+.vscode/

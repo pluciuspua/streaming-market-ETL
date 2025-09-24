@@ -1,0 +1,23 @@
+gcloud builds submit --tag gcr.io/live-data-pipeline-471309/publisher:latest .
+
+## Create Job
+gcloud run jobs deploy publisher --image=gcr.io/live-data-pipeline-471309/publisher:latest --region=asia-southeast1 --max-retries=3 --task-timeout=86400s --cpu=1 --memory=4Gi
+gcloud run jobs execute publisher
+
+# Create Service
+gcloud run deploy publisher-service --image gcr.io/live-data-pipeline-471309/publisher --region=asia-southeast1 --platform=managed --no-allow-unauthenticated
+
+# Create VM with Container
+gcloud compute instances create-with-container publisher-vm --container-image=gcr.io/live-data-pipeline-471309/publisher:latest --machine-type=e2-micro --scopes=https://www.googleapis.com/auth/pubsub,https://www.googleapis.com/auth/devstorage.read_write --zone=us-central1-a
+
+# give VM permission to access Artifact Registry
+gcloud projects add-iam-policy-binding live-data-pipeline-471309  --member="196202225837-compute@developer.gserviceaccount.com"  --role="roles/artifactregistry.reader"
+
+# Create Artifact Registry
+gcloud artifacts repositories create publisher-repo --repository-format=docker --location=asia-southeast1 --description="Publisher container repo"
+
+docker tag gcr.io/live-data-pipeline-471309/publisher asia-southeast1-docker.pkg.dev/live-data-pipeline-471309/publisher-repo/publisher
+
+##GCE deployment
+open DOCKER
+docker build -t <REGION>-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY_NAME>/publisher-daemon:v1 .

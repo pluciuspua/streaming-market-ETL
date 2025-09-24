@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/dashboard/requirements.txt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/dashboard/requirements.txt" />
+              <option name="updatedContent" value="streamlit&gt;=1.28.0&#10;streamlit-autorefresh&gt;=0.0.1&#10;plotly&gt;=5.15.0&#10;pandas&gt;=1.5.0&#10;google-cloud-bigquery&gt;=3.11.0&#10;PyYAML&gt;=6.0&#10;google-auth&gt;=2.22.0" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

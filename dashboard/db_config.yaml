@@ -1,0 +1,31 @@
+crypto_table_query: |
+  SELECT
+      symbol,
+      TIMESTAMP_TRUNC(window_start, MINUTE) as minute,
+      AVG(close_price) as avg_price,
+      SUM(total_volume) as total_volume,
+      MIN(min_low) as low_price,
+      MAX(max_high) as high_price,
+      ANY_VALUE(open_price) as open_price,
+      ANY_VALUE(close_price) as close_price,
+    FROM `{CRYPTO_TABLE}`
+    WHERE window_start >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
+    GROUP BY symbol, minute
+    ORDER BY minute ASC 
+
+news_table_query: |
+  SELECT
+      news_id,
+      symbol,
+      title,
+      description,
+      url,
+      source,
+      published_at,
+      alphavantage_sentiment,
+      alphavantage_sentiment_score,
+      finbert_sentiment,
+      finbert_score
+    FROM `{NEWS_TABLE}`
+    WHERE published_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 24 HOUR)
+    ORDER BY published_at DESC
